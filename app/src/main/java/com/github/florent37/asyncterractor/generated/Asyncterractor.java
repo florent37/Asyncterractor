@@ -1,6 +1,5 @@
 package com.github.florent37.asyncterractor.generated;
 
-import com.github.florent37.asyncterractor.MainActivity;
 import com.github.florent37.asyncterractor.MainPresenter;
 import com.github.florent37.asyncterractor.MainPresenterImpl;
 import com.github.florent37.asyncterractor.MainView;

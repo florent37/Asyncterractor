@@ -8,7 +8,7 @@ import com.github.florent37.asyncterractor.generated.Asyncterractor;
 
 public class MainActivity extends AppCompatActivity implements MainView {
 
-    MainPresenter mainPresenter;
+    private MainPresenter mainPresenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,7 +22,13 @@ public class MainActivity extends AppCompatActivity implements MainView {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        mainPresenter.undbind();
+    }
+
+    @Override
     public void displayUserName(String userName) {
-        Toast.makeText(getApplicationContext(), userName, Toast.LENGTH_LONG);
+        Toast.makeText(getApplicationContext(), userName, Toast.LENGTH_LONG).show();
     }
 }

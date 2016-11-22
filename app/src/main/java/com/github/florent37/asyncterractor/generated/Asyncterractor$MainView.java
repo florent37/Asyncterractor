@@ -10,8 +10,8 @@ import java.lang.ref.WeakReference;
 
 public class Asyncterractor$MainView implements MainView {
 
-    final WeakReference<MainView> reference;
-    final Handler handler;
+    private final WeakReference<MainView> reference;
+    private final Handler handler;
 
     public Asyncterractor$MainView(MainView mainView) {
         reference = new WeakReference<>(mainView);
