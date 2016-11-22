@@ -1,4 +1,4 @@
-package com.github.florent37.asyncterractor.generated;
+package asyncterractor.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
