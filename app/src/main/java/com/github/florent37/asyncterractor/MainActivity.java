@@ -4,8 +4,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Toast;
 
-import com.github.florent37.asyncterractor.generated.Asyncterractor;
-
 public class MainActivity extends AppCompatActivity implements MainView {
 
     private MainPresenter mainPresenter;

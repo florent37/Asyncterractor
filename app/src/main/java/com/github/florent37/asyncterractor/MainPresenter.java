@@ -1,6 +1,5 @@
 package com.github.florent37.asyncterractor;
-
-import com.github.florent37.asyncterractor.generated.OnThread;
+import com.github.florent37.asyncterractor.annotations.OnThread;
 
 @OnThread
 public interface MainPresenter {

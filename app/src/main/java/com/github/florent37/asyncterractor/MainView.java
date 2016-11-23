@@ -1,6 +1,6 @@
 package com.github.florent37.asyncterractor;
 
-import com.github.florent37.asyncterractor.generated.OnUiThread;
+import com.github.florent37.asyncterractor.annotations.OnUiThread;
 
 @OnUiThread
 public interface MainView {
