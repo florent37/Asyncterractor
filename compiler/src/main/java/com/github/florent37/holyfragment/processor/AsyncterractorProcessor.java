@@ -40,7 +40,7 @@ import static javax.lang.model.element.ElementKind.METHOD;
 @AutoService(javax.annotation.processing.Processor.class) public class AsyncterractorProcessor
     extends AbstractProcessor {
 
-    private Map<TypeName, Holder> holders = new HashMap<>();
+    private Map<ClassName, Holder> holders = new HashMap<>();
     private Filer filer;
 
     @Override
@@ -102,7 +102,7 @@ import static javax.lang.model.element.ElementKind.METHOD;
         holders.clear();
     }
 
-    private void constructAsyncterractor(Map<TypeName, Holder> holders) {
+    private void constructAsyncterractor(Map<?, Holder> holders) {
         final Collection<MethodSpec> methodSpecs = new ArrayList<>();
 
         for (Holder holder : holders.values()) {
@@ -168,8 +168,13 @@ import static javax.lang.model.element.ElementKind.METHOD;
             call.append("subject.").append(methodName).append("(");
             boolean first = true;
             for(VariableElement variableElement : methodType.getParameters()){
+                final String variableName = variableElement.getSimpleName().toString();
+                if(holders.get(ClassName.get(variableElement.asType())) != null){
+                    call.append("Asyncterractor.of(").append(variableName).append(")");
+                } else {
+                    call.append(variableName);
+                }
                 //TODO handle Asyncterractor.of here
-                call.append(variableElement.getSimpleName().toString());
                 if(first) {
                     first = false;
                 } else {
