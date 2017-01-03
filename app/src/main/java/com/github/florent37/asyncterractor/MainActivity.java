@@ -29,4 +29,9 @@ public class MainActivity extends AppCompatActivity implements MainView {
     public void displayUserName(String userName) {
         Toast.makeText(getApplicationContext(), userName, Toast.LENGTH_LONG).show();
     }
+
+    @Override
+    public void displayMessage(String message) {
+
+    }
 }

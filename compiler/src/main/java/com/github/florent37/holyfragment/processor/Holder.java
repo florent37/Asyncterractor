@@ -7,12 +7,14 @@ import javax.lang.model.element.Element;
 
 public class Holder {
     public Class annotation;
+    public Element element;
     public ClassName classNameComplete;
     public String className;
     public List<Element> methods;
 
-    public Holder(Class annotation, ClassName classNameComplete, String className) {
+    public Holder(Class annotation, Element element, ClassName classNameComplete, String className) {
         this.annotation = annotation;
+        this.element = element;
         this.classNameComplete = classNameComplete;
         this.className = className;
         this.methods = new ArrayList<>();

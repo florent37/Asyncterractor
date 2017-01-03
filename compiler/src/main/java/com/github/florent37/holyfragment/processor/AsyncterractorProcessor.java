@@ -1,5 +1,6 @@
 package com.github.florent37.holyfragment.processor;
 
+import com.github.florent37.asyncterractor.annotations.Ignore;
 import com.github.florent37.asyncterractor.annotations.OnThread;
 import com.github.florent37.asyncterractor.annotations.OnUiThread;
 import com.google.auto.service.AutoService;
@@ -9,6 +10,7 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -33,12 +36,13 @@ import static javax.lang.model.element.ElementKind.INTERFACE;
 import static javax.lang.model.element.ElementKind.METHOD;
 
 @SupportedAnnotationTypes({
-    "com.github.florent37.asyncterractor.annotations.OnThread",
-    "com.github.florent37.asyncterractor.annotations.OnUiThread"
+        "com.github.florent37.asyncterractor.annotations.OnThread",
+        "com.github.florent37.asyncterractor.annotations.OnUiThread"
 })
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
-@AutoService(javax.annotation.processing.Processor.class) public class AsyncterractorProcessor
-    extends AbstractProcessor {
+@AutoService(javax.annotation.processing.Processor.class)
+public class AsyncterractorProcessor
+        extends AbstractProcessor {
 
     private Map<ClassName, Holder> holders = new HashMap<>();
     private Filer filer;
@@ -58,12 +62,16 @@ import static javax.lang.model.element.ElementKind.METHOD;
         return true;
     }
 
-    protected boolean isAcceptable(Element element) {
-        if (element.getKind() != INTERFACE) {
-            throw new IllegalStateException("OnThread/OnUiThread annotation must be on a interface.");
-        }
+    private boolean isInterface(Element element) {
+        return element.getKind() == INTERFACE;
+    }
 
-        return true;
+    protected boolean isAcceptable(Element element) {
+        if (element.getKind() == INTERFACE || !(element.getModifiers().contains(Modifier.FINAL))) {
+            return true;
+        } else {
+            throw new IllegalStateException("OnThread/OnUiThread annotation should be on an interface or a non-final class.");
+        }
     }
 
     protected void processAnnotations(Element element, Class annotation) {
@@ -71,10 +79,10 @@ import static javax.lang.model.element.ElementKind.METHOD;
         final ClassName classFullName = ClassName.get((TypeElement) element); //com.github.florent37.MyView
         final String className = element.getSimpleName().toString(); //MyView
 
-        Holder holder = new Holder(annotation, classFullName, className);
+        Holder holder = new Holder(annotation, element, classFullName, className);
         final List<? extends Element> enclosedElements = element.getEnclosedElements();
-        for(Element child : enclosedElements){
-            if(child.getKind() == METHOD ){
+        for (Element child : enclosedElements) {
+            if (child.getKind() == METHOD) {
                 holder.addMethod(child);
             }
         }
@@ -107,18 +115,18 @@ import static javax.lang.model.element.ElementKind.METHOD;
 
         for (Holder holder : holders.values()) {
             final MethodSpec.Builder constructorB = MethodSpec.methodBuilder("of")
-                .returns(holder.classNameComplete)
-                .addParameter(holder.classNameComplete, "subject")
-                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                .addStatement("return new Asyncterractor$L(subject)", "$"+holder.className);
+                    .returns(holder.classNameComplete)
+                    .addParameter(holder.classNameComplete, "subject")
+                    .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                    .addStatement("return new Asyncterractor$L(subject)", "$" + holder.className);
             methodSpecs.add(constructorB.build());
         }
 
 
         final TypeSpec newClass = TypeSpec.classBuilder("Asyncterractor")
-            .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-            .addMethods(methodSpecs)
-            .build();
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addMethods(methodSpecs)
+                .build();
 
         final JavaFile javaFile = JavaFile.builder("com.github.florent37.asyncterractor", newClass).build();
 
@@ -134,11 +142,11 @@ import static javax.lang.model.element.ElementKind.METHOD;
         final Collection<MethodSpec> methodSpecs = new ArrayList<>();
 
         final MethodSpec.Builder constructorB = MethodSpec.constructorBuilder()
-            .addModifiers(Modifier.PUBLIC)
-            .addParameter(holder.classNameComplete, "subject")
-            .addStatement("this.reference = new WeakReference<>(subject)");
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(holder.classNameComplete, "subject")
+                .addStatement("this.reference = new WeakReference<>(subject)");
 
-        if(holder.annotation == OnThread.class) {
+        if (holder.annotation == OnThread.class) {
             constructorB.addStatement("this.handler = new Handler()");
         } else {
             constructorB.addStatement("this.handler = new Handler($T.getMainLooper())", ClassName.bestGuess("android.os.Looper"));
@@ -146,57 +154,72 @@ import static javax.lang.model.element.ElementKind.METHOD;
 
         methodSpecs.add(constructorB.build());
 
-        for(Element method : holder.methods) {
-            ExecutableElement methodType = (ExecutableElement)method;
+        for (Element method : holder.methods) {
+            ExecutableElement methodType = (ExecutableElement) method;
             final String methodName = method.getSimpleName().toString();
 
-            final MethodSpec.Builder methodB = MethodSpec.methodBuilder(methodName)
-                .addModifiers(Modifier.PUBLIC)
-                .returns(TypeName.get(methodType.getReturnType()))
-                .addAnnotation(Override.class);
+            if (isMethodAcceptable(method)) {
+                final MethodSpec.Builder methodB = MethodSpec.methodBuilder(methodName)
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(TypeName.get(methodType.getReturnType()))
+                        .addAnnotation(Override.class);
 
-            for(VariableElement variableElement : methodType.getParameters()){
-                methodB.addParameter(TypeName.get(variableElement.asType()), variableElement.getSimpleName().toString(), Modifier.FINAL);
-            }
-
-            methodB.addCode("handler.post(new $T() {\n", ClassName.get(Runnable.class))
-                .addCode("@Override public void run() {\n")
-                .addStatement("final $T subject = reference.get()", holder.classNameComplete)
-                .beginControlFlow("if (subject != null)");
-
-            final StringBuilder call = new StringBuilder();
-            call.append("subject.").append(methodName).append("(");
-            boolean first = true;
-            for(VariableElement variableElement : methodType.getParameters()){
-                final String variableName = variableElement.getSimpleName().toString();
-                if(holders.get(ClassName.get(variableElement.asType())) != null){
-                    call.append("Asyncterractor.of(").append(variableName).append(")");
-                } else {
-                    call.append(variableName);
+                for (VariableElement variableElement : methodType.getParameters()) {
+                    methodB.addParameter(TypeName.get(variableElement.asType()), variableElement.getSimpleName().toString(), Modifier.FINAL);
                 }
-                //TODO handle Asyncterractor.of here
-                if(first) {
-                    first = false;
-                } else {
-                    call.append(", ");
+
+                if (!containsIgnore(method)) {
+                    methodB.addCode("handler.post(new $T() {\n", ClassName.get(Runnable.class))
+                            .addCode("@Override public void run() {\n");
                 }
+
+                methodB.addStatement("final $T subject = reference.get()", holder.classNameComplete)
+                        .beginControlFlow("if (subject != null)");
+
+                final StringBuilder call = new StringBuilder();
+                call.append("subject.").append(methodName).append("(");
+                boolean first = true;
+                for (VariableElement variableElement : methodType.getParameters()) {
+                    final String variableName = variableElement.getSimpleName().toString();
+                    if (holders.get(ClassName.get(variableElement.asType())) != null) {
+                        call.append("Asyncterractor.of(").append(variableName).append(")");
+                    } else {
+                        call.append(variableName);
+                    }
+                    //TODO handle Asyncterractor.of here
+                    if (first) {
+                        first = false;
+                    } else {
+                        call.append(", ");
+                    }
+                }
+                call.append(")");
+
+                methodB.addStatement(call.toString());
+                methodB.endControlFlow();
+
+                if (!containsIgnore(method)) {
+                    methodB.addCode("}});");
+                }
+
+                methodSpecs.add(methodB.build());
             }
-            call.append(")");
-
-            methodB.addStatement(call.toString());
-            methodB.endControlFlow();
-            methodB.addCode("}});");
-
-            methodSpecs.add(methodB.build());
         }
 
-        final TypeSpec newClass = TypeSpec.classBuilder("Asyncterractor" + "$" + holder.className)
-            .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-            .addSuperinterface(holder.classNameComplete)
-            .addMethods(methodSpecs)
-            .addField(ClassName.bestGuess("android.os.Handler"), "handler", Modifier.PRIVATE, Modifier.FINAL)
-            .addField(ParameterizedTypeName.get(ClassName.bestGuess("java.lang.ref.WeakReference"), holder.classNameComplete), "reference", Modifier.PRIVATE, Modifier.FINAL)
-            .build();
+        final TypeSpec.Builder builder = TypeSpec.classBuilder("Asyncterractor" + "$" + holder.className)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addMethods(methodSpecs)
+                .addField(ClassName.bestGuess("android.os.Handler"), "handler", Modifier.PRIVATE, Modifier.FINAL)
+                .addField(ParameterizedTypeName.get(ClassName.bestGuess("java.lang.ref.WeakReference"), holder.classNameComplete), "reference", Modifier.PRIVATE, Modifier.FINAL);
+
+        final TypeName superClass = TypeName.get(holder.element.asType());
+        if (isInterface(holder.element)) {
+            builder.addSuperinterface(superClass);
+        } else {
+            builder.superclass(superClass);
+        }
+
+        final TypeSpec newClass = builder.build();
 
         final JavaFile javaFile = JavaFile.builder(holder.classNameComplete.packageName(), newClass).build();
 
@@ -206,5 +229,13 @@ import static javax.lang.model.element.ElementKind.METHOD;
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    protected boolean containsIgnore(Element method) {
+        return method.getAnnotation(Ignore.class) != null;
+    }
+
+    protected boolean isMethodAcceptable(Element method) {
+        return !(method.getModifiers().contains(Modifier.FINAL));
     }
 }

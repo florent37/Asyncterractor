@@ -5,4 +5,6 @@ import com.github.florent37.asyncterractor.annotations.OnUiThread;
 @OnUiThread
 public interface MainView {
     void displayUserName(String userName);
+
+    void displayMessage(String message);
 }
