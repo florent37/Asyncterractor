@@ -1,5 +1,9 @@
 package com.github.florent37.asyncterractor;
 
+import com.github.florent37.asyncterractor.annotations.Ignore;
+import com.github.florent37.asyncterractor.annotations.OnThread;
+
+@OnThread
 public class MainPresenterImpl implements MainPresenter {
 
     private MainView mainView;
@@ -10,6 +14,7 @@ public class MainPresenterImpl implements MainPresenter {
     }
 
     @Override
+    @Ignore
     public void undbind() {
         this.mainView = null;
     }
