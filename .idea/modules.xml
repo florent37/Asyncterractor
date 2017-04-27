@@ -3,8 +3,12 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Asyncterractor.iml" filepath="$PROJECT_DIR$/Asyncterractor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Asyncterractor.iml" filepath="$PROJECT_DIR$/Asyncterractor.iml" />
       <module fileurl="file://$PROJECT_DIR$/annotations/annotations.iml" filepath="$PROJECT_DIR$/annotations/annotations.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/asyncterractor/asyncterractor.iml" filepath="$PROJECT_DIR$/asyncterractor/asyncterractor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/asyncterractor-compiler/asyncterractor-compiler.iml" filepath="$PROJECT_DIR$/asyncterractor-compiler/asyncterractor-compiler.iml" />
       <module fileurl="file://$PROJECT_DIR$/compiler/compiler.iml" filepath="$PROJECT_DIR$/compiler/compiler.iml" />
     </modules>
   </component>

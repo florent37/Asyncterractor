@@ -1,1 +1,1 @@
-include ':app', ':annotations', ':compiler'
+include ':app', ':asyncterractor', ':asyncterractor-compiler'
