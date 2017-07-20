@@ -51,8 +51,8 @@ mainView.displayUserName("florent"); //will be executed in UI thread
 
 In your module [![Download](https://api.bintray.com/packages/florent37/maven/asyncterractor-compiler/images/download.svg)](https://bintray.com/florent37/maven/asyncterractor-compiler/_latestVersion)
 ```groovy
-compile 'com.github.florent37:asyncterractor:1.0.0'
-annotationProcessor 'com.github.florent37:asyncterractor-compiler:1.0.0'
+compile 'com.github.florent37:asyncterractor:1.0.1'
+annotationProcessor 'com.github.florent37:asyncterractor-compiler:1.0.1'
 ```
 
 # Credits

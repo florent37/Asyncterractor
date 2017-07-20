@@ -141,6 +141,14 @@ public class AsyncterractorProcessor
     public void construct(Holder holder) {
         final Collection<MethodSpec> methodSpecs = new ArrayList<>();
 
+        methodSpecs.add(MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(holder.classNameComplete, "subject")
+                .addParameter(ClassName.bestGuess("android.os.Handler"), "handler")
+                .addStatement("this.reference = new WeakReference<>(subject)")
+                .addStatement("this.handler = handler")
+                .build());
+
         final MethodSpec.Builder constructorB = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(holder.classNameComplete, "subject")

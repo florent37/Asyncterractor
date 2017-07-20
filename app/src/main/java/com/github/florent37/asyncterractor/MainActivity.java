@@ -4,9 +4,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import com.github.florent37.asyncterractor.annotations.OnThread;
+
 public class MainActivity extends AppCompatActivity implements MainView {
 
     private MainPresenter mainPresenter;
+
+    @OnThread
+    public interface MainPresenterChild {
+        void start();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
